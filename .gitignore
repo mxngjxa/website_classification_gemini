@@ -1,3 +1,5 @@
 .env
 .chc_p/
 results/
+*.txt
+*.log
