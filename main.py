@@ -82,7 +82,7 @@ def classify_website(content, topic, url=None, error_logger=None):
 
             RULES:
             - Respond with EXACTLY ONE character:
-            - "h" if the website IS related to the topic
+            - "p" if the website IS related to the topic
             - "u" if the website is NOT related to the topic
             - Do not include any explanations, just the single character response
             - Analyze content in either English or Chinese languages
