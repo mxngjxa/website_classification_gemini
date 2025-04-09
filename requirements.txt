@@ -1,6 +1,0 @@
-requests
-bs4
-openai
-google-genai
-python-dotenv
-tqdm
