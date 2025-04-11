@@ -1,3 +1,32 @@
+# filepath: /Users/jacky/workspaces/deledao/cwcm/chinese_classifier_paralell/main.py
+
+"""
+This script processes a list of URLs, validates their accessibility, extracts text content,
+and classifies the content based on a specified topic using the Gemini AI model.
+
+Features:
+- Validates website URLs for accessibility.
+- Extracts text content from HTML pages.
+- Classifies website content into predefined topics using the Gemini AI model.
+- Logs errors encountered during processing.
+- Supports parallel processing of URLs for improved performance.
+
+Usage:
+    python main.py <input_file.txt> [max_workers]
+
+Arguments:
+    input_file.txt: A text file where each line is a URL to process.
+    max_workers: (Optional) The number of threads to use for parallel processing. Default is 10.
+
+Dependencies:
+    - requests
+    - BeautifulSoup (from bs4)
+    - dotenv
+    - tqdm
+    - concurrent.futures
+    - Gemini AI SDK (google.genai)
+"""
+
 import os
 import sys
 import base64
@@ -11,6 +40,9 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 import concurrent.futures
 from error_logger import ErrorLogger  # Import the error logger class
+
+# Create a global Gemini client to reuse
+client = None
 
 def configure():
     load_dotenv()
@@ -55,9 +87,6 @@ def extract_text(url, error_logger=None):
         return None
     return None
 
-# Create a global Gemini client to reuse
-client = None
-
 def initialize_client():
     global client
     if client is None:
@@ -69,7 +98,8 @@ def classify_website(content, topic, url=None, error_logger=None):
     topic_dict = {
         'drugs': 'DRUGS: including illegal drugs, drug abuse, recreational and psychedelic drugs, and related topics.',
         'tobacco': 'TOBACCO: Include vaping and traditional tobacco products, including stores and advocacy.',
-        'violence': 'WEAPONS: Cover BB guns, airsoft, and real firearms.'
+        'violence': 'WEAPONS: Cover BB guns, airsoft, and real firearms.',
+        'weapons': 'WEAPONS: Cover BB guns, airsoft, and real firearms.',
     }
 
     if topic not in topic_dict:
