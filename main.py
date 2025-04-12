@@ -71,12 +71,12 @@ def extract_text(url, error_logger=None):
             texts.append(tag.get_text(separator=' ', strip=True))
         combined_text = ' '.join(texts)
         if combined_text:
-            return combined_text[:20000]
+            return combined_text[:40000]
 
         # Fallback: extract from the entire body
         if soup.body:
             text = soup.body.get_text(separator=' ', strip=True)
-            return text[:20000]
+            return text[:40000]
     except requests.RequestException as e:
         if error_logger:
             error_logger.log_error("parsing", url, f"Content extraction error: {e}")
@@ -99,7 +99,7 @@ def classify_website(content, topic, url=None, error_logger=None):
         'drugs': 'DRUGS: including illegal drugs, drug abuse, recreational and psychedelic drugs, and related topics.',
         'tobacco': 'TOBACCO: Include vaping and traditional tobacco products, including stores and advocacy.',
         'violence': 'WEAPONS: Cover BB guns, airsoft, and real firearms.',
-        'weapons': 'WEAPONS: Cover BB guns, airsoft, and real firearms.',
+        'weapon': 'WEAPONS: Cover BB guns, airsoft, real firearms, as well as other items that can be used to harm others, including but not limited to knives and other melee weapons.',
     }
 
     if topic not in topic_dict:
@@ -125,7 +125,7 @@ def classify_website(content, topic, url=None, error_logger=None):
             """
 
     client = initialize_client()
-    model = "gemini-2.0-flash-lite"
+    model = "gemini-2.0-flash"
     contents = [
         types.Content(
             role="user",
