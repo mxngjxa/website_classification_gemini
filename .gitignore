@@ -1,7 +1,6 @@
 .env
 .chc_p/
 results/
-*.txt
 *.log
 log/
 raw/

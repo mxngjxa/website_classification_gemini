@@ -39,7 +39,9 @@ from google.genai import types
 from dotenv import load_dotenv
 from tqdm import tqdm
 import concurrent.futures
-from error_logger import ErrorLogger  # Import the error logger class
+from error_logger import ErrorLogger
+from topics import topic_dict_small, topic_dict_medium, topic_dict_max
+
 
 # Create a global Gemini client to reuse
 client = None
@@ -95,34 +97,35 @@ def initialize_client():
 
 def classify_website(content, topic, url=None, error_logger=None):
     """Uses the Gemini model to classify website content."""
-    topic_dict = {
-        'drugs': 'DRUGS: including illegal drugs, drug abuse, recreational and psychedelic drugs, and related topics.',
-        'tobacco': 'TOBACCO: Include vaping and traditional tobacco products, including stores and advocacy.',
-        'violence': 'VIOLENCE: articles relating to behavior involving physical force intended to hurt, damage, or kill someone or something.',
-        'weapon': 'WEAPONS: Cover BB guns, airsoft, real firearms, as well as other items that can be used to harm others, including but not limited to knives and other melee weapons.',
-    }
 
-    if topic not in topic_dict:
+    topics_dict = topic_dict_medium
+
+    if topic not in topics_dict:
         if error_logger and url:
             error_logger.log_error("configuration", url, f"Unknown topic: {topic}")
         return 'u'  # Default to 'unrelated'
 
     prompt = f"""
-            You are a website content classifier that analyzes HTML/text content and determines if it's related to a specific topic.
+    You are a specialized content classifier analyzing website content for sensitive or restricted topics.
 
-            RULES:
-            - Respond with EXACTLY ONE character:
-            - "h" if the website IS related to the topic
-            - "u" if the website is NOT related to the topic
-            - Do not include any explanations, just the single character response
-            - Analyze content in either English or Chinese languages
-            - Consider page titles, headings, keywords, meta description, and body text
+    CLASSIFICATION TASK:
+    Determine if the website content relates to: {topics_dict.get(topic)}
 
-            TOPIC: {topic_dict.get(topic)}
+    INSTRUCTIONS:
+    - Analyze the entire content including titles, headings, links, text, and metadata
+    - Pay special attention to both explicit mentions and implicit references
+    - Consider both English and Chinese language content (including Simplified and Traditional Chinese)
+    - Look for cultural-specific terms and euphemisms commonly used in Chinese websites
+    - Evaluate images based on their descriptions or surrounding context if available
 
-            WEBSITE CONTENT:
-            {content}
-            """
+    RESPONSE FORMAT:
+    Reply with EXACTLY ONE character:
+    - "h" if the content IS related to the topic
+    - "u" if the content is NOT related to the topic
+
+    WEBSITE CONTENT:
+    {content}
+    """
 
     client = initialize_client()
     model = "gemini-2.0-flash"
