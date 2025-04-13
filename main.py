@@ -98,7 +98,7 @@ def classify_website(content, topic, url=None, error_logger=None):
     topic_dict = {
         'drugs': 'DRUGS: including illegal drugs, drug abuse, recreational and psychedelic drugs, and related topics.',
         'tobacco': 'TOBACCO: Include vaping and traditional tobacco products, including stores and advocacy.',
-        'violence': 'WEAPONS: Cover BB guns, airsoft, and real firearms.',
+        'violence': 'VIOLENCE: articles relating to behavior involving physical force intended to hurt, damage, or kill someone or something.',
         'weapon': 'WEAPONS: Cover BB guns, airsoft, real firearms, as well as other items that can be used to harm others, including but not limited to knives and other melee weapons.',
     }
 
@@ -112,7 +112,7 @@ def classify_website(content, topic, url=None, error_logger=None):
 
             RULES:
             - Respond with EXACTLY ONE character:
-            - "p" if the website IS related to the topic
+            - "h" if the website IS related to the topic
             - "u" if the website is NOT related to the topic
             - Do not include any explanations, just the single character response
             - Analyze content in either English or Chinese languages
@@ -147,7 +147,7 @@ def classify_website(content, topic, url=None, error_logger=None):
             config=generate_content_config,
         ):
             result = chunk.text.strip().lower()
-            if result and result[0] in ['h', 'u', 'i']:
+            if result and result[0] in ['h', 'u', 'i', 'p']:
                 return result[0]
     except Exception as e:
         if error_logger and url:
