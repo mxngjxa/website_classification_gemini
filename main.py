@@ -120,7 +120,7 @@ def classify_website(content, topic, url=None, error_logger=None):
 
     RESPONSE FORMAT:
     Reply with EXACTLY ONE character:
-    - "p" if the content IS related to the topic
+    - "h" if the content IS related to the topic
     - "u" if the content is NOT related to the topic
 
     WEBSITE CONTENT:
@@ -204,14 +204,18 @@ def process_file(input_file, max_workers=10):
         
         # Process results as they complete
         for future in tqdm(
-            concurrent.futures.as_completed(future_to_url), 
-            total=len(urls), 
-            desc="Processing URLs"
+            concurrent.futures.as_completed(future_to_url),
+            total=len(urls),
+            desc="Processing URLs",
+            unit="url"
         ):
             url = future_to_url[future]
             try:
-                result = future.result()
+                result = future.result(timeout=60)
                 results.append(result)
+            except concurrent.futures.TimeoutError:
+                error_logger.log_error("timeout", url, "Task timed out")
+                results.append((url, 'i'))
             except Exception as e:
                 error_logger.log_error("executor", url, f"Task execution error: {e}")
                 results.append((url, 'i'))
