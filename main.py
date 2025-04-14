@@ -95,7 +95,7 @@ def initialize_client():
         client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
     return client
 
-def classify_website(content, topic, url=None, error_logger=None):
+def classify_website(content, topic, url_type="-", url=None, error_logger=None):
     """Uses the Gemini model to classify website content."""
 
     topics_dict = topic_dict_medium
@@ -120,7 +120,7 @@ def classify_website(content, topic, url=None, error_logger=None):
 
     RESPONSE FORMAT:
     Reply with EXACTLY ONE character:
-    - "h" if the content IS related to the topic
+    - "{url_type}" if the content IS related to the topic
     - "u" if the content is NOT related to the topic
 
     WEBSITE CONTENT:
@@ -159,7 +159,7 @@ def classify_website(content, topic, url=None, error_logger=None):
 
     return 'u'
 
-def process_url(url, topic, error_logger=None):
+def process_url(url, topic, url_type="-", error_logger=None):
     """Process a single URL and return the result."""
     # Ensure the URL has a valid scheme
     parsed_url = urlparse(url)
@@ -172,7 +172,7 @@ def process_url(url, topic, error_logger=None):
         else:
             content = extract_text(url, error_logger)
             if content:
-                label = classify_website(content, topic, url, error_logger)
+                label = classify_website(content, topic, url_type, url, error_logger)
             else:
                 label = 'i'
         return url, label
@@ -181,7 +181,7 @@ def process_url(url, topic, error_logger=None):
             error_logger.log_error("processing", url, f"Unexpected error: {e}")
         return url, 'i'
 
-def process_file(input_file, max_workers=10):
+def process_file(input_file, url_type="-", max_workers=50):
     """
     Processes an input TXT file where each line is a URL.
     Uses ThreadPoolExecutor for parallel processing.
@@ -200,7 +200,7 @@ def process_file(input_file, max_workers=10):
     # Use a ThreadPoolExecutor for parallel processing
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all tasks and create a mapping of futures to URLs
-        future_to_url = {executor.submit(process_url, url, topic, error_logger): url for url in urls}
+        future_to_url = {executor.submit(process_url, url, topic, url_type, error_logger): url for url in urls}
         
         # Process results as they complete
         for future in tqdm(
@@ -232,11 +232,12 @@ def process_file(input_file, max_workers=10):
 
 if __name__ == '__main__':
     configure()
-    if len(sys.argv) < 2:
-        print("Usage: python script.py <input_file.txt> [max_workers]")
+    if len(sys.argv) < 3:
+        print("Usage: python script.py <input_file.txt> <url_type: h/p> [max_workers]")
         sys.exit(1)
     
     input_file = sys.argv[1]
-    max_workers = int(sys.argv[2]) if len(sys.argv) > 2 else 10
+    url_type = sys.argv[2]
+    max_workers = int(sys.argv[3]) if len(sys.argv) > 3 else 20
     
-    process_file(input_file, max_workers)
+    process_file(input_file, url_type, max_workers)
