@@ -120,7 +120,7 @@ def classify_website(content, topic, url=None, error_logger=None):
 
     RESPONSE FORMAT:
     Reply with EXACTLY ONE character:
-    - "h" if the content IS related to the topic
+    - "p" if the content IS related to the topic
     - "u" if the content is NOT related to the topic
 
     WEBSITE CONTENT:
